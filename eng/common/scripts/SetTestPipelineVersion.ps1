@@ -11,6 +11,7 @@ param (
 
 . (Join-Path $PSScriptRoot common.ps1)
 
+$newVersion = "1.0.0"
 $latestTags = git tag -l "${PackageName}_*"
 $semVars = @()
 
@@ -19,10 +20,13 @@ Foreach ($tags in $latestTags)
   $semVars += $tags.Replace("${PackageName}_", "")
 }
 
-$semVarsSorted = [AzureEngSemanticVersion]::SortVersionStrings($semVars)
-LogDebug "Last Published Version $($semVarsSorted[0])"
+if ($semVars -and $semVars.Length -gt 0)
+{
+  $semVarsSorted = [AzureEngSemanticVersion]::SortVersionStrings($semVars)
+  LogDebug "Last Published Version $($semVarsSorted[0])"
+  $newVersion = [AzureEngSemanticVersion]::new($semVarsSorted[0])
+}
 
-$newVersion = [AzureEngSemanticVersion]::new($semVarsSorted[0])
 $newVersion.PrereleaseLabel = $newVersion.DefaultPrereleaseLabel
 $newVersion.PrereleaseNumber = $BuildID
 
